@@ -19,3 +19,4 @@ C'est un bon début mais en fait j'aimerais que l'on crée un historique des jou
 Sur chaque jour il faut qu'on puisse cocher ou décocher les habitudes réalisées. Si on décoche une habitude, ça doit enlever l'expérience. Et quand on la recoche, ça rajoute l'expérience à nouveau.
 
 La navigation entre les dates doit pouvoir s'effectuer avec les flèches droite et gauche. Et quand on clique sur le libellé d'une habitude, ça doit cocher la case associée.
+

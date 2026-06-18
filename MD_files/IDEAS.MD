@@ -1,0 +1,11 @@
+Idées pour le projet :
+- Programme Sportif
+    - Types d'exercices par groupe musculaire (biceps, abdos, ...)
+    - Images/vidéos explicatives des mouvements
+    - Idées calendrier entrainement par semaine
+- Programme Alimentaire
+    - Selon l'objectig (perdre poids, prendre muscle, ...) proposer des programmes alimentation
+    - Recettes variées et équilibrées
+    - Lister les aliments par protéines/lipides/fibres/glucides
+        - Aliments les plus riches de chaque catégorie
+    - Mettre aliments en favoris ou liste noire

@@ -37,6 +37,40 @@
             <button id="addHabitBtn" class="add-btn">+ Add New Habit</button>
         </section>
     </main>
+
+    <!-- Add / Edit Habit Modal -->
+    <div id="habitModal" class="modal-overlay hidden">
+        <div class="modal">
+            <h2 id="modalTitle">Add New Habit</h2>
+            <form id="habitForm">
+                <label>
+                    Title
+                    <input type="text" id="habitTitle" required />
+                </label>
+                <label>
+                    Category
+                    <select id="habitCategory">
+                        <option value="Health">Health</option>
+                        <option value="Learning">Learning</option>
+                        <option value="Mindfulness">Mindfulness</option>
+                    </select>
+                </label>
+                <label>
+                    Target per day
+                    <input type="text" id="habitTarget" placeholder="e.g. 5 reps" />
+                </label>
+                <label>
+                    XP reward
+                    <input type="number" id="habitXp" value="10" min="1" />
+                </label>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">Save</button>
+                    <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

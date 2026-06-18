@@ -162,12 +162,68 @@ function updateUI() {
         });
         // checkbox change updates XP and stats
         checkbox.addEventListener('change', () => toggleHabit(h.id, checkbox.checked));
+        const editBtn = document.createElement('button');
+        editBtn.className = 'habit-action-btn';
+        editBtn.textContent = '✏️';
+        editBtn.setAttribute('aria-label', 'Edit habit');
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showModal(h);
+        });
+        const delBtn = document.createElement('button');
+        delBtn.className = 'habit-action-btn';
+        delBtn.textContent = '❌';
+        delBtn.setAttribute('aria-label', 'Delete habit');
+        delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteHabit(h.id);
+        });
         li.appendChild(checkbox);
         li.appendChild(spanIcon);
         li.appendChild(label);
+        li.appendChild(editBtn);
+        li.appendChild(delBtn);
         list.appendChild(li);
 
     });
+}
+
+function nextId() {
+    return state.habits.length ? Math.max(...state.habits.map(h => h.id)) + 1 : 1;
+}
+
+let editingId = null;
+
+function showModal(habit) {
+    const titleInput = document.getElementById('habitTitle');
+    const modalTitle = document.getElementById('modalTitle');
+    if (habit) {
+        editingId = habit.id;
+        modalTitle.textContent = 'Edit Habit';
+        titleInput.value = habit.title;
+        document.getElementById('habitCategory').value = habit.category;
+        document.getElementById('habitTarget').value = habit.target;
+        document.getElementById('habitXp').value = habit.rewardXp;
+    } else {
+        editingId = null;
+        modalTitle.textContent = 'Add New Habit';
+        document.getElementById('habitForm').reset();
+    }
+    document.getElementById('habitModal').classList.remove('hidden');
+    titleInput.focus();
+}
+function hideModal() {
+    document.getElementById('habitModal').classList.add('hidden');
+}
+
+function deleteHabit(id) {
+    if (!confirm('Delete this habit?')) return;
+    state.habits = state.habits.filter(h => h.id !== id);
+    Object.keys(state.history).forEach(date => {
+        delete state.history[date][id];
+    });
+    saveState();
+    updateUI();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -176,6 +232,35 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureHabitIcons();
     initDateNav();
     updateUI();
-    document.getElementById('addHabitBtn').addEventListener('click', () => alert('Add habit UI not implemented yet.'));
+
+    document.getElementById('addHabitBtn').addEventListener('click', () => showModal());
+    document.getElementById('cancelBtn').addEventListener('click', hideModal);
+    document.getElementById('habitModal').addEventListener('click', e => {
+        if (e.target === e.currentTarget) hideModal();
+    });
+    document.getElementById('habitForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const title = document.getElementById('habitTitle').value.trim();
+        const category = document.getElementById('habitCategory').value;
+        const target = document.getElementById('habitTarget').value.trim() || 'daily';
+        const rewardXp = parseInt(document.getElementById('habitXp').value, 10) || 10;
+        if (!title) return;
+
+        if (editingId) {
+            const habit = state.habits.find(h => h.id === editingId);
+            if (habit) {
+                habit.title = title;
+                habit.category = category;
+                habit.target = target;
+                habit.rewardXp = rewardXp;
+            }
+        } else {
+            state.habits.push({ id: nextId(), title, category, target, rewardXp });
+        }
+
+        saveState();
+        hideModal();
+        updateUI();
+    });
 });
 

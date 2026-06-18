@@ -130,6 +130,19 @@ input[type="checkbox"]:checked + .habit-icon + label {
     text-decoration: line-through;
 }
 
+.habit-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.25rem;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.habit-action-btn:hover {
+    opacity: 1;
+}
+
 
 .add-btn {
     width: 100%;
@@ -137,6 +150,77 @@ input[type="checkbox"]:checked + .habit-icon + label {
     background: var(--primary-color);
     border: none;
     color: var(--bg-color);
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+.modal-overlay.hidden {
+    display: none;
+}
+.modal {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    color: var(--accent-color);
+}
+.modal h2 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+.modal label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.modal input,
+.modal select {
+    width: 100%;
+    padding: 0.4rem;
+    margin-top: 0.25rem;
+    background: var(--bg-color);
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: var(--accent-color);
+    font-size: 0.95rem;
+}
+.modal select {
+    cursor: pointer;
+}
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.btn-primary {
+    flex: 1;
+    padding: 0.5rem;
+    background: var(--primary-color);
+    border: none;
+    color: var(--bg-color);
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.btn-secondary {
+    flex: 1;
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
     font-weight: bold;
     border-radius: 5px;
     cursor: pointer;
