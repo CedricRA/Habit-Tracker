@@ -169,9 +169,11 @@ input[type="checkbox"]:checked ~ label {
 }
 
 .habit-icon {
+    display: inline-block;
     font-size: 1.2rem;
     margin-right: 0.5rem;
     line-height: 1;
 }
+
 
 }

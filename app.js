@@ -56,26 +56,23 @@ function applyStat(category, delta) {
     else if (category === 'Mindfulness') state.stats.dex += delta;
 }
 
-function gainXP(amount) {
-    state.xp += amount;
-    // handle negative XP gracefully
-    while (state.xp < 0 && state.level > 1) {
-        state.level -= 1;
-        state.xpNext = Math.round(state.xpNext / 1.2);
-        state.xp += state.xpNext;
-    }
-    while (state.xp >= state.xpNext) {
-        state.xp -= state.xpNext;
-        state.level += 1;
-        state.xpNext = Math.round(state.xpNext * 1.2);
-        document.body.classList.add('level-up');
-        setTimeout(() => document.body.classList.remove('level-up'), 800);
-    }
+function ensureHabitIcons() {
+    const defaults = {
+        '5x Squats': '💪',
+        'Meditate 10min': '🧘',
+        'Read 20 pages': '📚'
+    };
+    state.habits.forEach(h => {
+        if (!h.icon && defaults[h.title]) {
+            h.icon = defaults[h.title];
+        }
+    });
+    saveState();
 }
 
 function addSampleHabits() {
     if (state.habits.length) return;
-state.habits = [
+    state.habits = [
         { id: 1, title: '5x Squats', category: 'Health', target: '5 reps', rewardXp: 10, icon: '💪' },
         { id: 2, title: 'Meditate 10min', category: 'Mindfulness', target: '10 min', rewardXp: 8, icon: '🧘' },
         { id: 3, title: 'Read 20 pages', category: 'Learning', target: '20 pages', rewardXp: 12, icon: '📚' }
@@ -152,6 +149,7 @@ function updateUI() {
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     addSampleHabits();
+    ensureHabitIcons();
     initDateNav();
     updateUI();
     document.getElementById('addHabitBtn').addEventListener('click', () => alert('Add habit UI not implemented yet.'));
