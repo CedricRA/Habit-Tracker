@@ -20,3 +20,6 @@ Sur chaque jour il faut qu'on puisse cocher ou décocher les habitudes réalisé
 
 La navigation entre les dates doit pouvoir s'effectuer avec les flèches droite et gauche. Et quand on clique sur le libellé d'une habitude, ça doit cocher la case associée.
 
+Rajoute la possibilité de modifier ou de supprimer des habitudes existantes.
+
+J'aimerais que l'application puisse être soit en anglais soit en français. Permet de traduire l'application dans ces deux langues. Pour faire ça proprement, utilisons des fichiers de traduction.
