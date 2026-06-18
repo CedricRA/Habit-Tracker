@@ -8,8 +8,11 @@
 </head>
 <body>
     <header class="app-header">
-        <h1>Habit Tracker</h1>
-        <button id="profileBtn" class="icon-btn" aria-label="Profile">👤</button>
+        <h1 data-i18n="appTitle">Habit Tracker</h1>
+        <div class="header-actions">
+            <button id="langToggle" class="lang-btn">FR</button>
+            <button id="profileBtn" class="icon-btn" data-i18n-aria="profile">👤</button>
+        </div>
     </header>
     <main>
         <section class="level-section">
@@ -32,9 +35,9 @@
             <button id="nextDay" class="nav-btn">→</button>
         </section>
         <section class="habits-section">
-            <h2 id="habitsHeader">Habits</h2>
+            <h2 id="habitsHeader" data-i18n="habits">Habits</h2>
             <ul id="habitList" class="habit-list"></ul>
-            <button id="addHabitBtn" class="add-btn">+ Add New Habit</button>
+            <button id="addHabitBtn" class="add-btn" data-i18n="addHabit">+ Add New Habit</button>
         </section>
     </main>
 
@@ -44,33 +47,34 @@
             <h2 id="modalTitle">Add New Habit</h2>
             <form id="habitForm">
                 <label>
-                    Title
+                    <span data-i18n="title">Title</span>
                     <input type="text" id="habitTitle" required />
                 </label>
                 <label>
-                    Category
+                    <span data-i18n="category">Category</span>
                     <select id="habitCategory">
-                        <option value="Health">Health</option>
-                        <option value="Learning">Learning</option>
-                        <option value="Mindfulness">Mindfulness</option>
+                        <option value="Health" data-i18n="health">Health</option>
+                        <option value="Learning" data-i18n="learning">Learning</option>
+                        <option value="Mindfulness" data-i18n="mindfulness">Mindfulness</option>
                     </select>
                 </label>
                 <label>
-                    Target per day
+                    <span data-i18n="targetPerDay">Target per day</span>
                     <input type="text" id="habitTarget" placeholder="e.g. 5 reps" />
                 </label>
                 <label>
-                    XP reward
+                    <span data-i18n="xpReward">XP reward</span>
                     <input type="number" id="habitXp" value="10" min="1" />
                 </label>
                 <div class="modal-actions">
-                    <button type="submit" class="btn-primary">Save</button>
-                    <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary" data-i18n="save">Save</button>
+                    <button type="button" id="cancelBtn" class="btn-secondary" data-i18n="cancel">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <script src="lang.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

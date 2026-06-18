@@ -133,12 +133,12 @@ function initDateNav() {
 }
 
 function updateUI() {
-    document.getElementById('levelDisplay').textContent = `Level ${state.level}`;
-    document.getElementById('xpDisplay').textContent = `XP: ${state.xp} / ${state.xpNext}`;
+    document.getElementById('levelDisplay').textContent = `${t('level')} ${state.level}`;
+    document.getElementById('xpDisplay').textContent = `${t('xp')}: ${state.xp} / ${state.xpNext}`;
     document.getElementById('xpProgress').style.width = `${(state.xp / state.xpNext) * 100}%`;
-    document.getElementById('hpStat').textContent = `HP: ${state.stats.hp}`;
-    document.getElementById('intStat').textContent = `INT: ${state.stats.int}`;
-    document.getElementById('dexStat').textContent = `DEX: ${state.stats.dex}`;
+    document.getElementById('hpStat').textContent = `${t('hp')}: ${state.stats.hp}`;
+    document.getElementById('intStat').textContent = `${t('int')}: ${state.stats.int}`;
+    document.getElementById('dexStat').textContent = `${t('dex')}: ${state.stats.dex}`;
     updateDateLabel();
 
     const list = document.getElementById('habitList');
@@ -154,7 +154,8 @@ function updateUI() {
         spanIcon.className = 'habit-icon';
         spanIcon.textContent = h.icon || '';
         const label = document.createElement('label');
-        label.textContent = `${h.title} (${h.target}) (+${h.rewardXp} XP)`;
+        const displayTarget = h.target === 'daily' ? t('daily') : h.target;
+        label.textContent = `${h.title} (${displayTarget}) (+${h.rewardXp} ${t('xpSuffix')})`;
         // clicking label triggers checkbox click (which fires change event)
         label.addEventListener('click', (e) => {
             e.preventDefault();
@@ -165,7 +166,7 @@ function updateUI() {
         const editBtn = document.createElement('button');
         editBtn.className = 'habit-action-btn';
         editBtn.textContent = '✏️';
-        editBtn.setAttribute('aria-label', 'Edit habit');
+        editBtn.setAttribute('aria-label', t('editHabitAria'));
         editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             showModal(h);
@@ -173,7 +174,7 @@ function updateUI() {
         const delBtn = document.createElement('button');
         delBtn.className = 'habit-action-btn';
         delBtn.textContent = '❌';
-        delBtn.setAttribute('aria-label', 'Delete habit');
+        delBtn.setAttribute('aria-label', t('deleteHabitAria'));
         delBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             deleteHabit(h.id);
@@ -199,14 +200,14 @@ function showModal(habit) {
     const modalTitle = document.getElementById('modalTitle');
     if (habit) {
         editingId = habit.id;
-        modalTitle.textContent = 'Edit Habit';
+        modalTitle.textContent = t('editHabit');
         titleInput.value = habit.title;
         document.getElementById('habitCategory').value = habit.category;
         document.getElementById('habitTarget').value = habit.target;
         document.getElementById('habitXp').value = habit.rewardXp;
     } else {
         editingId = null;
-        modalTitle.textContent = 'Add New Habit';
+        modalTitle.textContent = t('addNewHabit');
         document.getElementById('habitForm').reset();
     }
     document.getElementById('habitModal').classList.remove('hidden');
@@ -217,7 +218,7 @@ function hideModal() {
 }
 
 function deleteHabit(id) {
-    if (!confirm('Delete this habit?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     state.habits = state.habits.filter(h => h.id !== id);
     Object.keys(state.history).forEach(date => {
         delete state.history[date][id];
@@ -263,4 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 });
+
+document.addEventListener('langchange', updateUI);
 

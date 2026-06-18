@@ -36,6 +36,27 @@ body {
     color: var(--primary-color);
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lang-btn {
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.lang-btn:hover {
+    background: var(--primary-color);
+    color: var(--bg-color);
+}
+
 .icon-btn {
     background: none;
     border: none;
