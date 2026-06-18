@@ -115,6 +115,18 @@ main {
     flex: 1;
     margin-left: 0.5rem;
     cursor: pointer;
+    color: var(--accent-color);
+}
+
+/* Checkbox accent color */
+input[type="checkbox"] {
+    accent-color: var(--primary-color);
+}
+
+/* Bold and light‑green when checked */
+input[type="checkbox"]:checked + label {
+    font-weight: bold;
+    color: var(--primary-color);
 }
 
 .add-btn {
