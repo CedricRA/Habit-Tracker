@@ -23,3 +23,5 @@ La navigation entre les dates doit pouvoir s'effectuer avec les flèches droite 
 Rajoute la possibilité de modifier ou de supprimer des habitudes existantes.
 
 J'aimerais que l'application puisse être soit en anglais soit en français. Permet de traduire l'application dans ces deux langues. Pour faire ça proprement, utilisons des fichiers de traduction.
+
+Ajoutons une fonctionnalité qui va permettre de compléter les besoins journaliers de la page nutrition. Quand on appuiera sur le bouton, une fenêtre va s'ouvrir pour proposer des aliments ou des recettes qui vont compléter le besoin de calories et compléter les différents besoins de protéines, de lipides, de glucides et de fibres du jour.

@@ -378,16 +378,32 @@ function renderRecipeList() {
 
 let pendingMealType = '';
 
+const MEAL_OPTIONS = ['breakfast', 'lunch', 'dinner', 'snack'];
+const MEAL_LABELS_SHORT = { breakfast: '🌅 Petit-déjeuner', lunch: '☀️ Déjeuner', dinner: '🌙 Dîner', snack: '🍿 Collation' };
+
+function mealSelectHtml(selected) {
+  return MEAL_OPTIONS.map(m =>
+    `<option value="${m}"${m === selected ? ' selected' : ''}>${MEAL_LABELS_SHORT[m]}</option>`
+  ).join('');
+}
+
 function showAddFoodModal(foodId) {
-  const mealType = pendingMealType || 'lunch';
   const food = foodById(foodId);
   if (!food) return;
   const overlay = document.getElementById('addItemModal');
   const content = document.getElementById('addItemContent');
   overlay.classList.remove('hidden');
+  const preselected = pendingMealType || 'breakfast';
   content.innerHTML = `
     <p style="margin-bottom:0.5rem">${t('addTo')} <strong>${food.name}</strong></p>
-    <label>${t('quantity')} (${t('g')}) : <input type="number" id="foodAmount" value="100" min="1" style="width:80px;margin-left:0.5rem" /></label>
+    <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+      <span>Repas :</span>
+      <select id="mealTypeSelect" style="flex:1">${mealSelectHtml(preselected)}</select>
+    </label>
+    <label style="display:flex;align-items:center;gap:0.5rem">
+      <span>${t('quantity')} (${t('g')}) :</span>
+      <input type="number" id="foodAmount" value="100" min="1" style="width:80px" />
+    </label>
     <div class="modal-actions" style="margin-top:1rem">
       <button id="confirmAddFood" class="btn-primary">${t('add')}</button>
       <button id="cancelAddItem" class="btn-secondary">${t('cancel')}</button>
@@ -395,7 +411,8 @@ function showAddFoodModal(foodId) {
   `;
   document.getElementById('confirmAddFood').addEventListener('click', () => {
     const a = parseInt(document.getElementById('foodAmount').value, 10) || 100;
-    mealLogToday()[mealType].push({ foodId, a });
+    const meal = document.getElementById('mealTypeSelect').value;
+    mealLogToday()[meal].push({ foodId, a });
     saveState();
     overlay.classList.add('hidden');
     pendingMealType = '';
@@ -408,21 +425,26 @@ function showAddFoodModal(foodId) {
 }
 
 function showAddRecipeModal(recipeId) {
-  const mealType = pendingMealType || 'lunch';
   const r = recipeById(recipeId);
   if (!r) return;
   const overlay = document.getElementById('addItemModal');
   const content = document.getElementById('addItemContent');
   overlay.classList.remove('hidden');
+  const preselected = pendingMealType || 'breakfast';
   content.innerHTML = `
-    <p>${t('addTo')} <strong>${r.name}</strong> (${r.kcal} kcal) ?</p>
+    <p style="margin-bottom:0.5rem">${t('addTo')} <strong>${r.name}</strong> (${r.kcal} kcal)</p>
+    <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+      <span>Repas :</span>
+      <select id="mealTypeSelect" style="flex:1">${mealSelectHtml(preselected)}</select>
+    </label>
     <div class="modal-actions" style="margin-top:1rem">
       <button id="confirmAddRecipe" class="btn-primary">${t('add')}</button>
       <button id="cancelAddItem" class="btn-secondary">${t('cancel')}</button>
     </div>
   `;
   document.getElementById('confirmAddRecipe').addEventListener('click', () => {
-    mealLogToday()[mealType].push({ recipeId });
+    const meal = document.getElementById('mealTypeSelect').value;
+    mealLogToday()[meal].push({ recipeId });
     saveState();
     overlay.classList.add('hidden');
     pendingMealType = '';
