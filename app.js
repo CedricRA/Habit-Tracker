@@ -75,10 +75,10 @@ function gainXP(amount) {
 
 function addSampleHabits() {
     if (state.habits.length) return;
-    state.habits = [
-        { id: 1, title: '5x Squats', category: 'Health', target: '5 reps', rewardXp: 10 },
-        { id: 2, title: 'Meditate 10min', category: 'Mindfulness', target: '10 min', rewardXp: 8 },
-        { id: 3, title: 'Read 20 pages', category: 'Learning', target: '20 pages', rewardXp: 12 }
+state.habits = [
+        { id: 1, title: '5x Squats', category: 'Health', target: '5 reps', rewardXp: 10, icon: '💪' },
+        { id: 2, title: 'Meditate 10min', category: 'Mindfulness', target: '10 min', rewardXp: 8, icon: '🧘' },
+        { id: 3, title: 'Read 20 pages', category: 'Learning', target: '20 pages', rewardXp: 12, icon: '📚' }
     ];
     saveState();
 }
@@ -130,6 +130,9 @@ function updateUI() {
         checkbox.type = 'checkbox';
         const dayRecord = state.history[currentDate] || {};
         checkbox.checked = !!dayRecord[h.id];
+        const spanIcon = document.createElement('span');
+        spanIcon.className = 'habit-icon';
+        spanIcon.textContent = h.icon || '';
         const label = document.createElement('label');
         label.textContent = `${h.title} (${h.target}) (+${h.rewardXp} XP)`;
         // clicking label toggles checkbox and updates state
@@ -140,6 +143,7 @@ function updateUI() {
         // keep checkbox change handling for keyboard navigation
         checkbox.addEventListener('change', () => toggleHabit(h.id, checkbox.checked));
         li.appendChild(checkbox);
+        li.appendChild(spanIcon);
         li.appendChild(label);
         list.appendChild(li);
     });
