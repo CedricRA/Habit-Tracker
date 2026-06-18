@@ -33,18 +33,23 @@ function updateDateLabel() {
 
 
 function toggleHabit(id, isChecked) {
+
     if (!state.history[currentDate]) state.history[currentDate] = {};
     const already = !!state.history[currentDate][id];
     if (isChecked && !already) {
         // mark completed and give reward
         state.history[currentDate][id] = true;
-        gainXP(state.habits.find(h => h.id === id).rewardXp);
-        applyStat(state.habits.find(h => h.id === id).category, 1);
+        const habit = state.habits.find(h => h.id === id);
+
+        gainXP(habit.rewardXp);
+        applyStat(habit.category, 1);
     } else if (!isChecked && already) {
         // unmark and remove reward
         delete state.history[currentDate][id];
-        gainXP(-state.habits.find(h => h.id === id).rewardXp);
-        applyStat(state.habits.find(h => h.id === id).category, -1);
+        const habit = state.habits.find(h => h.id === id);
+
+        gainXP(-habit.rewardXp);
+        applyStat(habit.category, -1);
     }
     saveState();
     updateUI();
@@ -55,6 +60,24 @@ function applyStat(category, delta) {
     else if (category === 'Learning') state.stats.int += delta;
     else if (category === 'Mindfulness') state.stats.dex += delta;
 }
+
+function gainXP(amount) {
+    state.xp += amount;
+    // handle negative XP gracefully
+    while (state.xp < 0 && state.level > 1) {
+        state.level -= 1;
+        state.xpNext = Math.round(state.xpNext / 1.2);
+        state.xp += state.xpNext;
+    }
+    while (state.xp >= state.xpNext) {
+        state.xp -= state.xpNext;
+        state.level += 1;
+        state.xpNext = Math.round(state.xpNext * 1.2);
+        document.body.classList.add('level-up');
+        setTimeout(() => document.body.classList.remove('level-up'), 800);
+    }
+}
+
 
 function ensureHabitIcons() {
     const defaults = {
@@ -132,17 +155,18 @@ function updateUI() {
         spanIcon.textContent = h.icon || '';
         const label = document.createElement('label');
         label.textContent = `${h.title} (${h.target}) (+${h.rewardXp} XP)`;
-        // clicking label toggles checkbox and updates state
-        label.addEventListener('click', () => {
-            checkbox.checked = !checkbox.checked;
-            toggleHabit(h.id, checkbox.checked);
+        // clicking label triggers checkbox click (which fires change event)
+        label.addEventListener('click', (e) => {
+            e.preventDefault();
+            checkbox.click();
         });
-        // keep checkbox change handling for keyboard navigation
+        // checkbox change updates XP and stats
         checkbox.addEventListener('change', () => toggleHabit(h.id, checkbox.checked));
         li.appendChild(checkbox);
         li.appendChild(spanIcon);
         li.appendChild(label);
         list.appendChild(li);
+
     });
 }
 

@@ -124,10 +124,12 @@ input[type="checkbox"] {
 }
 
 /* Bold and light‑green when checked */
-input[type="checkbox"]:checked ~ label {
+input[type="checkbox"]:checked + .habit-icon + label {
     font-weight: bold;
     color: var(--primary-color);
+    text-decoration: line-through;
 }
+
 
 .add-btn {
     width: 100%;
