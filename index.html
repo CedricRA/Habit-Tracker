@@ -64,6 +64,7 @@
                         <span id="macroDisplay" class="macro-text">P: 0g  L: 0g  G: 0g  F: 0g</span>
                     </div>
                     <div class="macro-bar"><div id="calProgress" class="macro-progress"></div></div>
+                    <button id="suggestBtn" class="suggest-btn">💡 Compléter</button>
                 </div>
             </section>
 
@@ -159,6 +160,14 @@
         <div class="modal">
             <h3>Ajouter au repas</h3>
             <div id="addItemContent"></div>
+        </div>
+    </div>
+
+    <!-- Suggestions Modal -->
+    <div id="suggestionsModal" class="modal-overlay hidden">
+        <div class="modal modal-wide">
+            <h3>💡 Suggestions pour compléter</h3>
+            <div id="suggestionsContent"></div>
         </div>
     </div>
 

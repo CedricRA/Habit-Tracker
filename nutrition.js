@@ -122,6 +122,112 @@ function calcDayTotal() {
   return t;
 }
 
+function getDeficiency() {
+  const targets = dailyTargets();
+  const totals = calcDayTotal();
+  return {
+    kcal: Math.max(0, targets.kcal - totals.kcal),
+    p: Math.max(0, targets.p - totals.p),
+    l: Math.max(0, targets.l - totals.l),
+    g: Math.max(0, targets.g - totals.g),
+    f: Math.max(0, targets.f - totals.f),
+  };
+}
+
+function scoreItem(kcal, p, l, g, f, def) {
+  const fill = (val, need) => need > 0 ? Math.min(1, val / need) : 0;
+  return fill(kcal, def.kcal) + fill(p, def.p) + fill(l, def.l) + fill(g, def.g) + fill(f, def.f);
+}
+
+function showSuggestions() {
+  const def = getDeficiency();
+  const nut = getNutState();
+  const maxKcal = Math.round(def.kcal * 1.5); // don't suggest items exceeding 150% of remaining kcal
+
+  const scoredFoods = FOODS
+    .filter(f => !nut.blacklist.includes(f.id) && f.kcal <= maxKcal)
+    .map(f => ({ ...f, score: scoreItem(f.kcal, f.p, f.l, f.g, f.f || 0, def) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+
+  const scoredRecipes = RECIPES
+    .filter(r => r.kcal <= maxKcal)
+    .map(r => ({ ...r, score: scoreItem(r.kcal, r.p, r.l, r.g, r.f, def) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  const overlay = document.getElementById('suggestionsModal');
+  const content = document.getElementById('suggestionsContent');
+  overlay.classList.remove('hidden');
+
+  const defPct = (val, need) => need > 0 ? Math.round((val / need) * 100) : 0;
+
+  let html = `
+    <div class="sug-deficit">
+      <strong>Il manque :</strong>
+      ${def.kcal > 0 ? `${def.kcal} kcal (${defPct(def.kcal, dailyTargets().kcal)}%)` : '✓ kcal OK'}
+      · P: ${def.p > 0 ? `${def.p}g` : '✓'}  L: ${def.l > 0 ? `${def.l}g` : '✓'}  G: ${def.g > 0 ? `${def.g}g` : '✓'}  F: ${def.f > 0 ? `${def.f}g` : '✓'}
+    </div>
+    <div style="margin:0.5rem 0;font-size:0.8rem;color:var(--text-muted)">Classé par pertinence (comble le plus de besoins)</div>
+  `;
+
+  if (scoredFoods.length) {
+    html += `<div class="sug-section"><h4>🥦 Aliments suggérés</h4>`;
+    scoredFoods.forEach(f => {
+      const fills = [];
+      if (f.p > 0 && def.p > 0) fills.push(`P: +${f.p}g`);
+      if (f.l > 0 && def.l > 0) fills.push(`L: +${f.l}g`);
+      if (f.g > 0 && def.g > 0) fills.push(`G: +${f.g}g`);
+      if ((f.f || 0) > 0 && def.f > 0) fills.push(`F: +${f.f}g`);
+      html += `
+        <div class="sug-row">
+          <span class="sug-name">${f.name}</span>
+          <span class="sug-fills">${fills.join(' · ')} · ${f.kcal} kcal</span>
+          <button class="sug-add-btn" data-type="food" data-id="${f.id}">+</button>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (scoredRecipes.length) {
+    html += `<div class="sug-section"><h4>📖 Recettes suggérées</h4>`;
+    scoredRecipes.forEach(r => {
+      const fills = [];
+      if (r.p > 0 && def.p > 0) fills.push(`P: +${r.p}g`);
+      if (r.l > 0 && def.l > 0) fills.push(`L: +${r.l}g`);
+      if (r.g > 0 && def.g > 0) fills.push(`G: +${r.g}g`);
+      if (r.f > 0 && def.f > 0) fills.push(`F: +${r.f}g`);
+      html += `
+        <div class="sug-row">
+          <span class="sug-name">${r.name}</span>
+          <span class="sug-fills">${fills.join(' · ')} · ${r.kcal} kcal</span>
+          <button class="sug-add-btn" data-type="recipe" data-id="${r.id}">+</button>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!scoredFoods.length && !scoredRecipes.length) {
+    html += `<p style="text-align:center;color:var(--text-muted);padding:1rem">Tous les objectifs sont déjà atteints ! 🎉</p>`;
+  }
+
+  html += `<div class="modal-actions" style="margin-top:1rem"><button id="closeSuggestions" class="btn-secondary">Fermer</button></div>`;
+  content.innerHTML = html;
+
+  content.querySelectorAll('.sug-add-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.type;
+      const id = parseInt(btn.dataset.id, 10);
+      overlay.classList.add('hidden');
+      if (type === 'food') showAddFoodModal(id);
+      else showAddRecipeModal(id);
+    });
+  });
+  document.getElementById('closeSuggestions').addEventListener('click', () => {
+    overlay.classList.add('hidden');
+  });
+}
+
 function renderNutrition() {
   const nut = getNutState();
   document.getElementById('nutritionGoal').value = nut.goal;
@@ -134,6 +240,9 @@ function renderNutrition() {
   document.getElementById('calProgress').style.width = calPct + '%';
   document.getElementById('macroDisplay').textContent =
     `P: ${totals.p}/${targets.p}g  L: ${totals.l}/${targets.l}g  G: ${totals.g}/${targets.g}g  F: ${totals.f}/${targets.f}g`;
+
+  const suggestBtn = document.getElementById('suggestBtn');
+  if (suggestBtn) suggestBtn.style.display = totals.kcal < targets.kcal ? '' : 'none';
 
   ['breakfast', 'lunch', 'dinner', 'snack'].forEach(m => {
     const container = document.getElementById('meal' + m.charAt(0).toUpperCase() + m.slice(1));
@@ -361,4 +470,6 @@ function initNutrition() {
       document.getElementById('nutritionSubpages').scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  document.getElementById('suggestBtn')?.addEventListener('click', showSuggestions);
 }
