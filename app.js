@@ -227,6 +227,16 @@ function deleteHabit(id) {
     updateUI();
 }
 
+function switchTab(page) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+    const tabBtn = document.querySelector(`.tab[data-page="${page}"]`);
+    if (tabBtn) tabBtn.classList.add('active');
+    const pageEl = document.getElementById(page + 'Page');
+    if (pageEl) pageEl.classList.remove('hidden');
+    if (page === 'nutrition') renderNutrition();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     addSampleHabits();
@@ -263,7 +273,26 @@ document.addEventListener('DOMContentLoaded', () => {
         hideModal();
         updateUI();
     });
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.page));
+    });
+
+    // Nutrition init
+    initNutrition();
+    const nut = getNutState();
+    document.getElementById('nutritionWeight').value = nut.weight;
+    document.getElementById('nutritionWeight').addEventListener('change', e => {
+        nut.weight = parseInt(e.target.value, 10) || 70;
+        saveState();
+        renderNutrition();
+    });
 });
 
-document.addEventListener('langchange', updateUI);
+document.addEventListener('langchange', () => {
+    updateUI();
+    const nutPage = document.getElementById('nutritionPage');
+    if (nutPage && !nutPage.classList.contains('hidden')) renderNutrition();
+});
 

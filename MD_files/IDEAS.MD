@@ -4,7 +4,7 @@
     - Images/vidéos explicatives des mouvements
     - Idées calendrier entrainement par semaine
 - Programme Alimentaire
-    - Selon l'objectig (perdre poids, prendre muscle, ...) proposer des programmes alimentation
+    - Selon l'objectif (perdre poids, prendre muscle, ...) proposer des programmes alimentation
     - Recettes variées et équilibrées
     - Lister les aliments par protéines/lipides/fibres/glucides
         - Aliments les plus riches de chaque catégorie
