@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gamified Habit Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header class="app-header">
+        <h1>Habit Tracker</h1>
+        <button id="profileBtn" class="icon-btn" aria-label="Profile">👤</button>
+    </header>
+    <main>
+        <section class="level-section">
+            <div class="level-info">
+                <span id="levelDisplay">Level 1</span>
+                <span id="xpDisplay">XP: 0 / 100</span>
+            </div>
+            <div class="xp-bar">
+                <div id="xpProgress" class="xp-progress"></div>
+            </div>
+        </section>
+        <section class="stats-section">
+            <div class="stat" id="hpStat">HP: 0</div>
+            <div class="stat" id="intStat">INT: 0</div>
+            <div class="stat" id="dexStat">DEX: 0</div>
+        </section>
+        <section class="date-nav">
+            <button id="prevDay" class="nav-btn">←</button>
+            <span id="currentDate" class="date-label"></span>
+            <button id="nextDay" class="nav-btn">→</button>
+        </section>
+        <section class="habits-section">
+            <h2 id="habitsHeader">Habits</h2>
+            <ul id="habitList" class="habit-list"></ul>
+            <button id="addHabitBtn" class="add-btn">+ Add New Habit</button>
+        </section>
+    </main>
+    <script src="app.js"></script>
+</body>
+</html>
