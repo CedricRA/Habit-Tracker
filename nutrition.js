@@ -219,6 +219,7 @@ function showSuggestions() {
       const type = btn.dataset.type;
       const id = parseInt(btn.dataset.id, 10);
       overlay.classList.add('hidden');
+      _fromSuggestions = true;
       if (type === 'food') showAddFoodModal(id);
       else showAddRecipeModal(id);
     });
@@ -377,6 +378,7 @@ function renderRecipeList() {
 }
 
 let pendingMealType = '';
+let _fromSuggestions = false;
 
 const MEAL_OPTIONS = ['breakfast', 'lunch', 'dinner', 'snack'];
 const MEAL_LABELS_SHORT = { breakfast: '🌅 Petit-déjeuner', lunch: '☀️ Déjeuner', dinner: '🌙 Dîner', snack: '🍿 Collation' };
@@ -417,10 +419,12 @@ function showAddFoodModal(foodId) {
     overlay.classList.add('hidden');
     pendingMealType = '';
     renderNutrition();
+    if (_fromSuggestions) { _fromSuggestions = false; showSuggestions(); }
   });
   document.getElementById('cancelAddItem').addEventListener('click', () => {
     overlay.classList.add('hidden');
     pendingMealType = '';
+    _fromSuggestions = false;
   });
 }
 
@@ -449,11 +453,172 @@ function showAddRecipeModal(recipeId) {
     overlay.classList.add('hidden');
     pendingMealType = '';
     renderNutrition();
+    if (_fromSuggestions) { _fromSuggestions = false; showSuggestions(); }
   });
   document.getElementById('cancelAddItem').addEventListener('click', () => {
     overlay.classList.add('hidden');
     pendingMealType = '';
+    _fromSuggestions = false;
   });
+}
+
+function showQuickAddPanel(mealType) {
+  const overlay = document.getElementById('addItemModal');
+  const content = document.getElementById('addItemContent');
+  const modalEl = overlay.querySelector('.modal');
+  modalEl.classList.add('modal-wide');
+  overlay.classList.remove('hidden');
+
+  const mealName = MEAL_LABELS_SHORT[mealType] || mealType;
+  const catNames = { protein: t('proteins'), carbs: t('carbs'), veg: t('vegetables'), fruit: t('fruits'), fat: t('fats'), dairy: t('dairy') };
+  let tab = 'foods';
+  let qtyFood = null;
+
+  function close() {
+    overlay.classList.add('hidden');
+    modalEl.classList.remove('modal-wide');
+  }
+
+  function summaryHtml() {
+    const entries = mealLogToday()[mealType];
+    const total = calcMealTotal(entries);
+    if (!entries.length) return '';
+    const items = entries.map(e => {
+      if (e.recipeId) {
+        const r = recipeById(e.recipeId);
+        return r ? r.name : '';
+      }
+      const f = foodById(e.foodId);
+      return f ? `${f.name} ${e.a}g` : '';
+    }).filter(Boolean).join(' · ');
+    return `<div class="qadd-summary">
+      <div class="qadd-summary-items">${items}</div>
+      <div class="qadd-summary-totals">→ ${total.kcal} kcal · P:${total.p}g L:${total.l}g G:${total.g}g F:${total.f}g</div>
+    </div>`;
+  }
+
+  function render() {
+    if (qtyFood) {
+      content.innerHTML = `
+        <div class="qadd-header">
+          <button id="qaddBack" class="qadd-back-btn">← ${t('cancel')}</button>
+          <strong>${qtyFood.name}</strong>
+          <button id="qaddClose" class="meal-rm-btn">✕</button>
+        </div>
+        ${summaryHtml()}
+        <div class="qadd-qty-form">
+          <label>Quantité
+            <input type="number" id="qaddAmount" value="100" min="1" />
+          </label>
+          <div class="qadd-form-actions">
+            <button id="qaddConfirmQty" class="btn-primary">${t('add')}</button>
+            <button id="qaddCancelQty" class="btn-secondary">${t('cancel')}</button>
+          </div>
+        </div>
+      `;
+      const inp = document.getElementById('qaddAmount');
+      inp.focus(); inp.select();
+      document.getElementById('qaddConfirmQty').addEventListener('click', () => {
+        const a = parseInt(inp.value, 10) || 100;
+        mealLogToday()[mealType].push({ foodId: qtyFood.id, a });
+        saveState();
+        renderNutrition();
+        qtyFood = null;
+        render();
+      });
+      document.getElementById('qaddCancelQty').addEventListener('click', () => { qtyFood = null; render(); });
+      document.getElementById('qaddBack').addEventListener('click', () => { qtyFood = null; render(); });
+      document.getElementById('qaddClose').addEventListener('click', close);
+      return;
+    }
+
+    // --- list view ---
+    let listHtml = '';
+    let lastCat = '';
+    FOODS.forEach(f => {
+      if (f.cat !== lastCat) {
+        lastCat = f.cat;
+        listHtml += `<div class="food-cat-header">${catNames[f.cat] || f.cat}</div>`;
+      }
+      listHtml += `
+        <div class="food-row">
+          <span class="food-name">${f.name}</span>
+          <span class="food-macros">P:${f.p} L:${f.l} G:${f.g} (${f.kcal} kcal)</span>
+          <button class="qadd-btn qadd-add-food" data-id="${f.id}">+</button>
+        </div>
+      `;
+    });
+
+    let recipeHtml = '';
+    RECIPES.forEach(r => {
+      const ingredients = r.foods.map(ri => {
+        const food = foodById(ri.id);
+        return food ? `${food.name} (${ri.a}g)` : '';
+      }).join(', ');
+      recipeHtml += `
+        <div class="recipe-card" style="margin-bottom:0.4rem">
+          <div class="recipe-header">
+            <strong>${r.name}</strong>
+            <span class="recipe-kcal">${r.kcal} kcal</span>
+          </div>
+          <div class="recipe-macros">P:${r.p}g  L:${r.l}g  G:${r.g}g  F:${r.f}g</div>
+          <div class="recipe-ingredients">${ingredients}</div>
+          <div style="margin-top:0.3rem">
+            <button class="qadd-btn qadd-recipe qadd-add-recipe" data-id="${r.id}">+ ${t('addRecipe')}</button>
+          </div>
+        </div>
+      `;
+    });
+
+    content.innerHTML = `
+      <div class="qadd-header">
+        <strong>Ajouter à : ${mealName}</strong>
+        <button id="qaddClose" class="meal-rm-btn">✕</button>
+      </div>
+      ${summaryHtml()}
+      <nav class="sub-tab-nav">
+        <button class="sub-tab ${tab === 'foods' ? 'active' : ''}" data-qaddtab="foods">🥦 <span data-i18n="foods">Aliments</span></button>
+        <button class="sub-tab ${tab === 'recipes' ? 'active' : ''}" data-qaddtab="recipes">📖 <span data-i18n="recipes">Recettes</span></button>
+      </nav>
+      <div class="qadd-body">
+        <div class="${tab === 'foods' ? '' : 'hidden'}">${listHtml}</div>
+        <div class="${tab === 'recipes' ? '' : 'hidden'}">${recipeHtml}</div>
+      </div>
+    `;
+
+    // food add buttons
+    content.querySelectorAll('.qadd-add-food').forEach(btn => {
+      btn.addEventListener('click', () => {
+        qtyFood = FOODS.find(f => f.id === parseInt(btn.dataset.id, 10));
+        if (qtyFood) render();
+      });
+    });
+
+    // recipe add buttons
+    content.querySelectorAll('.qadd-add-recipe').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = recipeById(parseInt(btn.dataset.id, 10));
+        if (r) {
+          mealLogToday()[mealType].push({ recipeId: r.id });
+          saveState();
+          renderNutrition();
+          render();
+        }
+      });
+    });
+
+    // tab switching
+    content.querySelectorAll('.sub-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tab = btn.dataset.qaddtab;
+        render();
+      });
+    });
+
+    document.getElementById('qaddClose').addEventListener('click', close);
+  }
+
+  render();
 }
 
 function initNutrition() {
@@ -485,13 +650,24 @@ function initNutrition() {
     });
   });
 
+  // Quick add from meals page
   document.querySelectorAll('.add-meal-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      pendingMealType = btn.dataset.meal;
-      document.querySelector('.sub-tab[data-subpage="foods"]').click();
-      document.getElementById('nutritionSubpages').scrollIntoView({ behavior: 'smooth' });
-    });
+    btn.addEventListener('click', () => showQuickAddPanel(btn.dataset.meal));
+  });
+
+  // Overlay click to close + cleanup modal-wide
+  document.getElementById('addItemModal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      const modal = this.querySelector('.modal');
+      if (modal) modal.classList.remove('modal-wide');
+      this.classList.add('hidden');
+    }
   });
 
   document.getElementById('suggestBtn')?.addEventListener('click', showSuggestions);
+
+  // Close shortcut: Overlay click on suggestions modal
+  document.getElementById('suggestionsModal').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.add('hidden');
+  });
 }

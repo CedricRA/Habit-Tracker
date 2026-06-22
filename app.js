@@ -279,6 +279,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tab.addEventListener('click', () => switchTab(tab.dataset.page));
     });
 
+    // Home link (title)
+    document.getElementById('homeLink').addEventListener('click', e => {
+        e.preventDefault();
+        switchTab('home');
+    });
+
     // Nutrition init
     initNutrition();
     const nut = getNutState();

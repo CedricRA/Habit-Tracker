@@ -8,16 +8,18 @@
 </head>
 <body>
     <header class="app-header">
-        <h1 data-i18n="appTitle">Habit Tracker</h1>
+        <div class="header-left">
+            <h1><a href="#" id="homeLink" data-i18n="appTitle">Habit Tracker</a></h1>
+            <nav class="header-nav">
+                <button class="tab active" data-page="home">🏠 <span data-i18n="home">Home</span></button>
+                <button class="tab" data-page="nutrition">🥗 <span data-i18n="nutrition">Nutrition</span></button>
+            </nav>
+        </div>
         <div class="header-actions">
             <button id="langToggle" class="lang-btn">FR</button>
             <button id="profileBtn" class="icon-btn" data-i18n-aria="profile">👤</button>
         </div>
     </header>
-    <nav class="tab-nav">
-        <button class="tab active" data-page="home">🏠 <span data-i18n="home">Home</span></button>
-        <button class="tab" data-page="nutrition">🥗 <span data-i18n="nutrition">Nutrition</span></button>
-    </nav>
     <main>
         <div id="homePage" class="page">
             <section class="level-section">
@@ -47,60 +49,71 @@
         </div>
 
         <div id="nutritionPage" class="page hidden">
-            <section class="nutrition-header">
-                <div class="goal-row">
-                    <label><span data-i18n="goal">Objectif</span> :
-                        <select id="nutritionGoal">
-                            <option value="maintain" data-i18n="maintain">Maintien</option>
-                            <option value="lose" data-i18n="loseWeight">Perte de poids</option>
-                            <option value="gain" data-i18n="gainMuscle">Prise de muscle</option>
-                        </select>
-                    </label>
-                    <label><span data-i18n="weight">Poids</span> : <input type="number" id="nutritionWeight" value="70" min="30" max="300" style="width:70px" /> <span data-i18n="kg">kg</span></label>
-                </div>
-                <div class="macro-summary">
-                    <div class="macro-row">
-                        <span id="calDisplay"><span data-i18n="calories">Calories</span> : 0 / 2000</span>
-                        <span id="macroDisplay" class="macro-text">P: 0g  L: 0g  G: 0g  F: 0g</span>
-                    </div>
-                    <div class="macro-bar"><div id="calProgress" class="macro-progress"></div></div>
-                    <button id="suggestBtn" class="suggest-btn">💡 Compléter</button>
-                </div>
-            </section>
-
-            <section class="meal-section">
-                <h3 data-i18n="todaysMeals">Repas du jour</h3>
-                <div id="mealLogContainer">
-                    <div class="meal-slot">
-                        <span class="meal-label">🌅 <span data-i18n="breakfast">Petit-déjeuner</span></span>
-                        <div id="mealBreakfast" class="meal-items"></div>
-                        <button class="add-meal-btn" data-meal="breakfast">+ <span data-i18n="add">Ajouter</span></button>
-                    </div>
-                    <div class="meal-slot">
-                        <span class="meal-label">☀️ <span data-i18n="lunch">Déjeuner</span></span>
-                        <div id="mealLunch" class="meal-items"></div>
-                        <button class="add-meal-btn" data-meal="lunch">+ <span data-i18n="add">Ajouter</span></button>
-                    </div>
-                    <div class="meal-slot">
-                        <span class="meal-label">🌙 <span data-i18n="dinner">Dîner</span></span>
-                        <div id="mealDinner" class="meal-items"></div>
-                        <button class="add-meal-btn" data-meal="dinner">+ <span data-i18n="add">Ajouter</span></button>
-                    </div>
-                    <div class="meal-slot">
-                        <span class="meal-label">🍿 <span data-i18n="snack">Collation</span></span>
-                        <div id="mealSnack" class="meal-items"></div>
-                        <button class="add-meal-btn" data-meal="snack">+ <span data-i18n="add">Ajouter</span></button>
-                    </div>
-                </div>
-            </section>
-
             <div id="nutritionSubpages">
                 <nav class="sub-tab-nav">
-                    <button class="sub-tab active" data-subpage="foods">🥦 <span data-i18n="foods">Aliments</span></button>
+                    <button class="sub-tab active" data-subpage="meals">📋 <span data-i18n="todaysMeals">Repas du jour</span></button>
+                    <button class="sub-tab" data-subpage="foods">🥦 <span data-i18n="foods">Aliments</span></button>
                     <button class="sub-tab" data-subpage="recipes">📖 <span data-i18n="recipes">Recettes</span></button>
                 </nav>
 
-                <div id="foodsPage" class="sub-page">
+                <div id="mealsPage" class="sub-page">
+                    <section class="nutrition-header">
+                        <div class="goal-row">
+                            <label><span data-i18n="goal">Objectif</span> :
+                                <select id="nutritionGoal">
+                                    <option value="maintain" data-i18n="maintain">Maintien</option>
+                                    <option value="lose" data-i18n="loseWeight">Perte de poids</option>
+                                    <option value="gain" data-i18n="gainMuscle">Prise de muscle</option>
+                                </select>
+                            </label>
+                            <label><span data-i18n="weight">Poids</span> : <input type="number" id="nutritionWeight" value="70" min="30" max="300" style="width:70px" /> <span data-i18n="kg">kg</span></label>
+                        </div>
+                        <div class="macro-summary">
+                            <div class="macro-row">
+                                <span id="calDisplay"><span data-i18n="calories">Calories</span> : 0 / 2000</span>
+                                <span id="macroDisplay" class="macro-text">P: 0g  L: 0g  G: 0g  F: 0g</span>
+                            </div>
+                            <div class="macro-bar"><div id="calProgress" class="macro-progress"></div></div>
+                            <button id="suggestBtn" class="suggest-btn">💡 Compléter</button>
+                        </div>
+                    </section>
+
+                    <section class="meal-section">
+                        <h3 data-i18n="todaysMeals">Repas du jour</h3>
+                        <div id="mealLogContainer">
+                            <div class="meal-slot">
+                                <div class="meal-label-row">
+                                    <span class="meal-label">🌅 <span data-i18n="breakfast">Petit-déjeuner</span></span>
+                                    <button class="add-meal-btn" data-meal="breakfast">➕ <span data-i18n="add">Ajouter</span></button>
+                                </div>
+                                <div id="mealBreakfast" class="meal-items"></div>
+                            </div>
+                            <div class="meal-slot">
+                                <div class="meal-label-row">
+                                    <span class="meal-label">☀️ <span data-i18n="lunch">Déjeuner</span></span>
+                                    <button class="add-meal-btn" data-meal="lunch">➕ <span data-i18n="add">Ajouter</span></button>
+                                </div>
+                                <div id="mealLunch" class="meal-items"></div>
+                            </div>
+                            <div class="meal-slot">
+                                <div class="meal-label-row">
+                                    <span class="meal-label">🌙 <span data-i18n="dinner">Dîner</span></span>
+                                    <button class="add-meal-btn" data-meal="dinner">➕ <span data-i18n="add">Ajouter</span></button>
+                                </div>
+                                <div id="mealDinner" class="meal-items"></div>
+                            </div>
+                            <div class="meal-slot">
+                                <div class="meal-label-row">
+                                    <span class="meal-label">🍿 <span data-i18n="snack">Collation</span></span>
+                                    <button class="add-meal-btn" data-meal="snack">➕ <span data-i18n="add">Ajouter</span></button>
+                                </div>
+                                <div id="mealSnack" class="meal-items"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="foodsPage" class="sub-page hidden">
                     <input type="text" id="foodSearch" class="food-search" data-i18n-placeholder="searchFood" placeholder="🔍 Rechercher un aliment..." />
                     <div class="filter-tabs">
                         <button class="filter-btn active" data-filter="all"><span data-i18n="all">Tous</span></button>

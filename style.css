@@ -13,6 +13,8 @@
     padding: 0;
 }
 
+.hidden { display: none !important; }
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     background: var(--bg-color);
@@ -71,6 +73,30 @@ main {
     max-width: 800px;
     margin: 0 auto;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.page:not(.hidden) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#nutritionSubpages {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#foodsPage {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .level-section {
@@ -269,28 +295,43 @@ input[type="checkbox"]:checked + .habit-icon + label {
 }
 
 /* Tab navigation */
-.tab-nav {
+.header-left {
     display: flex;
-    background: var(--card-bg);
-    border-bottom: 1px solid #333;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
 }
-.tab {
-    flex: 1;
-    padding: 0.6rem;
+
+.header-left h1 a {
+    color: var(--primary-color);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.header-nav .tab {
     background: none;
     border: none;
     color: var(--text-muted);
     font-size: 0.95rem;
     cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
-    border-bottom: 2px solid transparent;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    transition: color 0.2s, background 0.2s;
 }
-.tab:hover {
+
+.header-nav .tab:hover {
     color: var(--accent-color);
+    background: rgba(255,255,255,0.05);
 }
-.tab.active {
+
+.header-nav .tab.active {
     color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
 }
 
 /* Page visibility */
@@ -367,7 +408,11 @@ input[type="checkbox"]:checked + .habit-icon + label {
 .meal-label {
     font-weight: bold;
     font-size: 0.85rem;
-    display: block;
+}
+.meal-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.3rem;
 }
 .meal-items {
@@ -398,20 +443,137 @@ input[type="checkbox"]:checked + .habit-icon + label {
     padding: 0 0.25rem;
 }
 .add-meal-btn {
-    width: 100%;
-    margin-top: 0.4rem;
-    padding: 0.3rem;
     background: none;
     border: 1px dashed #555;
     color: var(--text-muted);
-    border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
-    transition: border-color 0.2s, color 0.2s;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    white-space: nowrap;
 }
 .add-meal-btn:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
+    background: rgba(168, 230, 207, 0.05);
+}
+
+/* Quick add modal */
+.qadd-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+.qadd-body .sub-tab-nav {
+    margin-bottom: 0.5rem;
+}
+.qadd-body .food-row {
+    padding: 0.4rem 0.5rem 0.4rem 0;
+}
+.qadd-body .food-name {
+    font-size: 0.85rem;
+}
+.qadd-body .food-macros {
+    font-size: 0.78rem;
+}
+.qadd-btn {
+    background: none;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.qadd-btn:hover {
+    background: var(--primary-color);
+    color: var(--bg-color);
+}
+.qadd-recipe {
+    width: auto;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+}
+.qadd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+.qadd-header strong {
+    color: var(--primary-color);
+}
+.qadd-back-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+.qadd-back-btn:hover {
+    background: rgba(168, 230, 207, 0.1);
+}
+.qadd-summary {
+    background: var(--bg-color);
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+.qadd-summary-items {
+    color: var(--accent-color);
+    word-break: break-word;
+}
+.qadd-summary-totals {
+    color: var(--primary-color);
+    font-weight: bold;
+    margin-top: 0.15rem;
+}
+.qadd-qty-form {
+    padding: 1rem 0;
+    text-align: center;
+}
+.qadd-qty-form label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.qadd-qty-form input {
+    display: block;
+    margin: 0.3rem auto 0;
+    width: 100px;
+    padding: 0.4rem;
+    background: var(--card-bg);
+    border: 1px solid #444;
+    color: var(--accent-color);
+    border-radius: 4px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+.qadd-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+.qadd-form-actions .btn-primary,
+.qadd-form-actions .btn-secondary {
+    flex: 0 1 auto;
+    padding: 0.4rem 1.5rem;
 }
 
 /* Sub-tab navigation */
@@ -484,8 +646,9 @@ input[type="checkbox"]:checked + .habit-icon + label {
 
 /* Food list */
 .food-list {
-    max-height: 400px;
+    flex: 1;
     overflow-y: auto;
+    min-height: 0;
 }
 .food-cat-header {
     font-size: 0.8rem;
@@ -525,12 +688,16 @@ input[type="checkbox"]:checked + .habit-icon + label {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0 0.15rem;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    font-size: 1.1rem;
+    padding: 0.2rem 0.3rem;
+    color: var(--accent-color);
+    transition: opacity 0.2s, transform 0.15s;
+    border-radius: 3px;
 }
-.food-actions button:hover,
+.food-actions button:hover {
+    opacity: 0.8;
+    transform: scale(1.15);
+}
 .food-actions button.active {
     opacity: 1;
 }
