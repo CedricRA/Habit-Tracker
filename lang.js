@@ -62,6 +62,8 @@ const translations = {
     noFoods: 'No foods found.',
     ingredients: 'Ingredients',
     addRecipe: 'Add recipe',
+    newFood: 'New food',
+    newRecipe: 'New recipe',
   },
   fr: {
     pageTitle: 'Suivi d\'habitudes ludique',
@@ -124,6 +126,8 @@ const translations = {
     noFoods: 'Aucun aliment trouvé.',
     ingredients: 'Ingrédients',
     addRecipe: 'Ajouter la recette',
+    newFood: 'Nouvel aliment',
+    newRecipe: 'Nouvelle recette',
   }
 };
 

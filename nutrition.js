@@ -57,8 +57,15 @@ function getNutState() {
       mealLog: {},
     };
   }
+  if (!state.nutrition.foods) state.nutrition.foods = FOODS.map(f => ({ ...f }));
+  if (!state.nutrition.recipes) state.nutrition.recipes = RECIPES.map(r => ({ ...r }));
   return state.nutrition;
 }
+
+function getFoods() { return getNutState().foods; }
+function getRecipes() { return getNutState().recipes; }
+function nextFoodId() { const a = getFoods(); return a.length ? Math.max(...a.map(f => f.id)) + 1 : 1; }
+function nextRecipeId() { const a = getRecipes(); return a.length ? Math.max(...a.map(r => r.id)) + 1 : 1; }
 
 function mealLogToday() {
   const nut = getNutState();
@@ -90,8 +97,8 @@ const MEAL_LABELS = {
 };
 const MEAL_ICONS = { breakfast: '🌅', lunch: '☀️', dinner: '🌙', snack: '🍿' };
 
-function foodById(id) { return FOODS.find(f => f.id === id); }
-function recipeById(id) { return RECIPES.find(r => r.id === id); }
+function foodById(id) { return getFoods().find(f => f.id === id); }
+function recipeById(id) { return getRecipes().find(r => r.id === id); }
 function isFav(id) { return getNutState().favFoods.includes(id); }
 function isBlacklisted(id) { return getNutState().blacklist.includes(id); }
 
@@ -144,13 +151,13 @@ function showSuggestions() {
   const nut = getNutState();
   const maxKcal = Math.round(def.kcal * 1.5); // don't suggest items exceeding 150% of remaining kcal
 
-  const scoredFoods = FOODS
+  const scoredFoods = getFoods()
     .filter(f => !nut.blacklist.includes(f.id) && f.kcal <= maxKcal)
     .map(f => ({ ...f, score: scoreItem(f.kcal, f.p, f.l, f.g, f.f || 0, def) }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 8);
 
-  const scoredRecipes = RECIPES
+  const scoredRecipes = getRecipes()
     .filter(r => r.kcal <= maxKcal)
     .map(r => ({ ...r, score: scoreItem(r.kcal, r.p, r.l, r.g, r.f, def) }))
     .sort((a, b) => b.score - a.score)
@@ -306,7 +313,7 @@ function renderFoodList() {
   const filter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
   const showFavs = filter === 'fav';
 
-  let foods = [...FOODS];
+  let foods = [...getFoods()];
   if (showFavs) foods = foods.filter(f => nut.favFoods.includes(f.id));
   else foods = foods.filter(f => filter === 'all' || f.cat === filter);
   if (query) foods = foods.filter(f => f.name.toLowerCase().includes(query));
@@ -320,7 +327,21 @@ function renderFoodList() {
   });
 
   container.innerHTML = '';
-  if (!foods.length) { container.innerHTML = `<p class="empty-msg">${t('noFoods')}</p>`; return; }
+
+  // Add new food button
+  const addNewFood = document.createElement('button');
+  addNewFood.className = 'add-btn';
+  addNewFood.innerHTML = '➕ ' + (t('newFood') || 'Nouvel aliment');
+  addNewFood.addEventListener('click', () => showFoodForm());
+  container.appendChild(addNewFood);
+
+  if (!foods.length) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'empty-msg';
+    emptyMsg.textContent = t('noFoods');
+    container.appendChild(emptyMsg);
+    return;
+  }
 
   let lastCat = '';
   foods.forEach(f => {
@@ -336,15 +357,19 @@ function renderFoodList() {
     row.className = 'food-row' + (nut.blacklist.includes(f.id) ? ' blacklisted' : '');
     row.innerHTML = `
       <span class="food-name">${f.name}</span>
-      <span class="food-macros">P:${f.p} L:${f.l} G:${f.g} (${f.kcal} kcal)</span>
+      <span class="food-macros">P:${f.p} L:${f.l} G:${f.g} F:${f.f}g (${f.kcal} kcal)</span>
       <div class="food-actions">
         <button class="fav-btn${nut.favFoods.includes(f.id) ? ' active' : ''}" data-id="${f.id}">★</button>
         <button class="blk-btn${nut.blacklist.includes(f.id) ? ' active' : ''}" data-id="${f.id}">⊗</button>
+        <button class="edit-food-btn" data-id="${f.id}">✏️</button>
+        <button class="del-food-btn" data-id="${f.id}">❌</button>
         <button class="add-food-btn" data-id="${f.id}">+</button>
       </div>
     `;
     row.querySelector('.fav-btn').addEventListener('click', () => toggleFav(f.id));
     row.querySelector('.blk-btn').addEventListener('click', () => toggleBlacklist(f.id));
+    row.querySelector('.edit-food-btn').addEventListener('click', () => showFoodForm(f.id));
+    row.querySelector('.del-food-btn').addEventListener('click', () => deleteFood(f.id));
     row.querySelector('.add-food-btn').addEventListener('click', () => showAddFoodModal(f.id));
     container.appendChild(row);
   });
@@ -354,13 +379,22 @@ function renderRecipeList() {
   const container = document.getElementById('recipeList');
   if (!container) return;
   container.innerHTML = '';
-  RECIPES.forEach(r => {
+
+  const addNewRecipe = document.createElement('button');
+  addNewRecipe.className = 'add-btn';
+  addNewRecipe.innerHTML = '➕ ' + (t('newRecipe') || 'Nouvelle recette');
+  addNewRecipe.addEventListener('click', () => showRecipeForm());
+  container.appendChild(addNewRecipe);
+
+  getRecipes().forEach(r => {
     const card = document.createElement('div');
     card.className = 'recipe-card';
-    const ingredients = r.foods.map(ri => {
-      const food = foodById(ri.id);
-      return food ? `${food.name} (${ri.a}g)` : '';
-    }).join(', ');
+    const ingredients = r.foods && r.foods.length
+      ? r.foods.map(ri => {
+          const food = foodById(ri.id);
+          return food ? `${food.name} (${ri.a}g)` : '';
+        }).join(', ')
+      : r.ingredientsText || '';
     card.innerHTML = `
       <div class="recipe-header">
         <strong>${r.name}</strong>
@@ -369,9 +403,13 @@ function renderRecipeList() {
       <div class="recipe-macros">P:${r.p}g  L:${r.l}g  G:${r.g}g  F:${r.f}g</div>
       <div class="recipe-ingredients">${ingredients}</div>
       <div class="recipe-actions">
+        <button class="edit-recipe-btn" data-id="${r.id}">✏️</button>
+        <button class="del-recipe-btn" data-id="${r.id}">❌</button>
         <button class="add-recipe-btn" data-id="${r.id}">+ ${t('addRecipe')}</button>
       </div>
     `;
+    card.querySelector('.edit-recipe-btn').addEventListener('click', () => showRecipeForm(r.id));
+    card.querySelector('.del-recipe-btn').addEventListener('click', () => deleteRecipe(r.id));
     card.querySelector('.add-recipe-btn').addEventListener('click', () => showAddRecipeModal(r.id));
     container.appendChild(card);
   });
@@ -535,7 +573,7 @@ function showQuickAddPanel(mealType) {
     // --- list view ---
     let listHtml = '';
     let lastCat = '';
-    FOODS.forEach(f => {
+    getFoods().forEach(f => {
       if (f.cat !== lastCat) {
         lastCat = f.cat;
         listHtml += `<div class="food-cat-header">${catNames[f.cat] || f.cat}</div>`;
@@ -543,18 +581,20 @@ function showQuickAddPanel(mealType) {
       listHtml += `
         <div class="food-row">
           <span class="food-name">${f.name}</span>
-          <span class="food-macros">P:${f.p} L:${f.l} G:${f.g} (${f.kcal} kcal)</span>
+          <span class="food-macros">P:${f.p} L:${f.l} G:${f.g} F:${f.f}g (${f.kcal} kcal)</span>
           <button class="qadd-btn qadd-add-food" data-id="${f.id}">+</button>
         </div>
       `;
     });
 
     let recipeHtml = '';
-    RECIPES.forEach(r => {
-      const ingredients = r.foods.map(ri => {
-        const food = foodById(ri.id);
-        return food ? `${food.name} (${ri.a}g)` : '';
-      }).join(', ');
+    getRecipes().forEach(r => {
+      const ingredients = r.foods && r.foods.length
+        ? r.foods.map(ri => {
+            const food = foodById(ri.id);
+            return food ? `${food.name} (${ri.a}g)` : '';
+          }).join(', ')
+        : r.ingredientsText || '';
       recipeHtml += `
         <div class="recipe-card" style="margin-bottom:0.4rem">
           <div class="recipe-header">
@@ -589,7 +629,7 @@ function showQuickAddPanel(mealType) {
     // food add buttons
     content.querySelectorAll('.qadd-add-food').forEach(btn => {
       btn.addEventListener('click', () => {
-        qtyFood = FOODS.find(f => f.id === parseInt(btn.dataset.id, 10));
+        qtyFood = getFoods().find(f => f.id === parseInt(btn.dataset.id, 10));
         if (qtyFood) render();
       });
     });
@@ -619,6 +659,179 @@ function showQuickAddPanel(mealType) {
   }
 
   render();
+}
+
+// ── Food / Recipe CRUD ────────────────────────────────────────
+
+function showFoodForm(foodId) {
+  const overlay = document.getElementById('addItemModal');
+  const content = document.getElementById('addItemContent');
+  overlay.classList.remove('hidden');
+
+  const food = foodId ? foodById(foodId) : null;
+  const isEdit = !!food;
+  const catOpts = ['protein', 'carbs', 'veg', 'fruit', 'fat', 'dairy'];
+  const catLabels = { protein: t('proteins'), carbs: t('carbs'), veg: t('vegetables'), fruit: t('fruits'), fat: t('fats'), dairy: t('dairy') };
+
+  content.innerHTML = `
+    <div class="qadd-header">
+      <strong>${isEdit ? 'Modifier' : 'Nouvel'} aliment</strong>
+      <button id="qaddClose" class="meal-rm-btn">✕</button>
+    </div>
+    <div style="padding:0.5rem 0">
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
+        Nom
+        <input type="text" id="ffName" value="${isEdit ? food.name : ''}" style="display:block;width:100%;margin-top:0.2rem;padding:0.3rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px" />
+      </label>
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
+        Catégorie
+        <select id="ffCat" style="display:block;width:100%;margin-top:0.2rem;padding:0.3rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px">
+          ${catOpts.map(c => `<option value="${c}"${isEdit && food.cat === c ? ' selected' : ''}>${catLabels[c]}</option>`).join('')}
+        </select>
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.3rem;margin-bottom:0.5rem">
+        ${['p','l','g','f','kcal'].map(k => `
+          <label style="font-size:0.8rem;color:var(--text-muted);display:flex;flex-direction:column">
+            ${k.toUpperCase()}
+            <input type="number" id="ff${k}" value="${isEdit ? food[k] : 0}" min="0" style="margin-top:0.15rem;padding:0.25rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px" />
+          </label>
+        `).join('')}
+      </div>
+      <div class="qadd-form-actions">
+        <button id="ffSave" class="btn-primary">${t('save')}</button>
+        <button id="ffCancel" class="btn-secondary">${t('cancel')}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('ffSave').addEventListener('click', () => {
+    const name = document.getElementById('ffName').value.trim();
+    if (!name) return;
+    const entry = {
+      id: isEdit ? food.id : nextFoodId(),
+      name,
+      cat: document.getElementById('ffCat').value,
+      p: parseInt(document.getElementById('ffp').value, 10) || 0,
+      l: parseInt(document.getElementById('ffl').value, 10) || 0,
+      g: parseInt(document.getElementById('ffg').value, 10) || 0,
+      f: parseInt(document.getElementById('fff').value, 10) || 0,
+      kcal: parseInt(document.getElementById('ffkcal').value, 10) || 0,
+    };
+    const foods = getFoods();
+    if (isEdit) {
+      const idx = foods.findIndex(x => x.id === food.id);
+      if (idx > -1) foods[idx] = entry;
+    } else {
+      foods.push(entry);
+    }
+    saveState();
+    overlay.classList.add('hidden');
+    renderFoodList();
+  });
+
+  document.getElementById('ffCancel').addEventListener('click', () => overlay.classList.add('hidden'));
+  document.getElementById('qaddClose').addEventListener('click', () => overlay.classList.add('hidden'));
+}
+
+function deleteFood(id) {
+  if (!confirm('Supprimer cet aliment ?')) return;
+  const foods = getFoods();
+  const idx = foods.findIndex(f => f.id === id);
+  if (idx > -1) foods.splice(idx, 1);
+  // remove from meals too
+  const nut = getNutState();
+  Object.keys(nut.mealLog).forEach(date => {
+    Object.keys(nut.mealLog[date]).forEach(meal => {
+      nut.mealLog[date][meal] = nut.mealLog[date][meal].filter(e => e.foodId !== id);
+    });
+  });
+  saveState();
+  renderFoodList();
+}
+
+function showRecipeForm(recipeId) {
+  const overlay = document.getElementById('addItemModal');
+  const content = document.getElementById('addItemContent');
+  overlay.classList.remove('hidden');
+
+  const recipe = recipeId ? recipeById(recipeId) : null;
+  const isEdit = !!recipe;
+
+  content.innerHTML = `
+    <div class="qadd-header">
+      <strong>${isEdit ? 'Modifier' : 'Nouvelle'} recette</strong>
+      <button id="qaddClose" class="meal-rm-btn">✕</button>
+    </div>
+    <div style="padding:0.5rem 0">
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
+        Nom
+        <input type="text" id="rfName" value="${isEdit ? recipe.name : ''}" style="display:block;width:100%;margin-top:0.2rem;padding:0.3rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px" />
+      </label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0.3rem;margin-bottom:0.5rem">
+        ${['p','l','g','f','kcal'].map(k => `
+          <label style="font-size:0.8rem;color:var(--text-muted);display:flex;flex-direction:column">
+            ${k.toUpperCase()}
+            <input type="number" id="rf${k}" value="${isEdit ? recipe[k] : 0}" min="0" style="margin-top:0.15rem;padding:0.25rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px" />
+          </label>
+        `).join('')}
+      </div>
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.85rem;color:var(--text-muted)">
+        Ingrédients
+        <textarea id="rfIngredients" rows="3" style="display:block;width:100%;margin-top:0.2rem;padding:0.3rem;background:var(--bg-color);border:1px solid #444;color:var(--accent-color);border-radius:3px;resize:vertical" placeholder="Poulet 150g, riz 200g, brocoli 100g...">${isEdit ? (recipe.ingredientsText || '') : ''}</textarea>
+      </label>
+      <div class="qadd-form-actions">
+        <button id="rfSave" class="btn-primary">${t('save')}</button>
+        <button id="rfCancel" class="btn-secondary">${t('cancel')}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('rfSave').addEventListener('click', () => {
+    const name = document.getElementById('rfName').value.trim();
+    if (!name) return;
+    const entry = {
+      id: isEdit ? recipe.id : nextRecipeId(),
+      name,
+      p: parseInt(document.getElementById('rfp').value, 10) || 0,
+      l: parseInt(document.getElementById('rfl').value, 10) || 0,
+      g: parseInt(document.getElementById('rfg').value, 10) || 0,
+      f: parseInt(document.getElementById('rff').value, 10) || 0,
+      kcal: parseInt(document.getElementById('rfkcal').value, 10) || 0,
+      ingredientsText: document.getElementById('rfIngredients').value.trim(),
+    };
+    const recipes = getRecipes();
+    if (isEdit) {
+      // keep foods array if it existed
+      const old = recipes.find(x => x.id === recipe.id);
+      if (old && old.foods) entry.foods = [...old.foods];
+      const idx = recipes.findIndex(x => x.id === recipe.id);
+      if (idx > -1) recipes[idx] = entry;
+    } else {
+      recipes.push(entry);
+    }
+    saveState();
+    overlay.classList.add('hidden');
+    renderRecipeList();
+  });
+
+  document.getElementById('rfCancel').addEventListener('click', () => overlay.classList.add('hidden'));
+  document.getElementById('qaddClose').addEventListener('click', () => overlay.classList.add('hidden'));
+}
+
+function deleteRecipe(id) {
+  if (!confirm('Supprimer cette recette ?')) return;
+  const recipes = getRecipes();
+  const idx = recipes.findIndex(r => r.id === id);
+  if (idx > -1) recipes.splice(idx, 1);
+  // remove from meals
+  const nut = getNutState();
+  Object.keys(nut.mealLog).forEach(date => {
+    Object.keys(nut.mealLog[date]).forEach(meal => {
+      nut.mealLog[date][meal] = nut.mealLog[date][meal].filter(e => e.recipeId !== id);
+    });
+  });
+  saveState();
+  renderRecipeList();
 }
 
 function initNutrition() {
